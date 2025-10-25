@@ -1,4 +1,4 @@
-package br.edu.ifsp.scl.ads.prdm.sc090578.contactlist
+package br.edu.ifsp.scl.ads.prdm.sc090578.contactlist.model
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
