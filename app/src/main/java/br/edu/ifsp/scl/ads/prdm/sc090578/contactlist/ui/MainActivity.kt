@@ -14,6 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import br.edu.ifsp.scl.ads.prdm.sc090578.contactlist.R
 import br.edu.ifsp.scl.ads.prdm.sc090578.contactlist.adapter.ContactAdapter
+import br.edu.ifsp.scl.ads.prdm.sc090578.contactlist.controller.MainController
 import br.edu.ifsp.scl.ads.prdm.sc090578.contactlist.model.Constant.EXTRA_CONTACT
 import br.edu.ifsp.scl.ads.prdm.sc090578.contactlist.databinding.ActivityMainBinding
 import br.edu.ifsp.scl.ads.prdm.sc090578.contactlist.model.Constant.EXTRA_VIEW_CONTACT
@@ -33,6 +34,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var carl: ActivityResultLauncher<Intent>
+
+    // Controller
+    private val mainController: MainController by lazy {
+        MainController(this)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,9 +63,11 @@ class MainActivity : AppCompatActivity() {
                     val position = contactList.indexOfFirst { it.id == receivedContact.id }
                     if (position == -1) {
                         contactList.add(receivedContact)
+                        mainController.insertContact(receivedContact)
                     }
                     else {
                         contactList[position] = receivedContact
+                        mainController.modifyContact(receivedContact)
                     }
                     contactAdapter.notifyDataSetChanged()
                 }
@@ -117,6 +125,7 @@ class MainActivity : AppCompatActivity() {
 
         return when(item.itemId) {
             R.id.remove_contact_mi -> {
+                mainController.removeContact(contactList[position].id!!)
                 contactList.removeAt(position)
                 contactAdapter.notifyDataSetChanged()
                 Toast.makeText(this, "Contact removed!", Toast.LENGTH_SHORT).show()
@@ -135,16 +144,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun fillContactList() {
-        for (i in 1..10) {
-            contactList.add(
-                Contact(
-                    i,
-                    "Name $i",
-                    "Address $i",
-                    "Phone $i",
-                    "Email $i"
-                )
-            )
-        }
+        contactList.clear()
+        Thread {
+            contactList.addAll(mainController.getContacts())
+            contactAdapter.notifyDataSetChanged()
+        }.start()
     }
 }
